@@ -665,12 +665,12 @@ def set_deterministic(seed=0):
     torch.backends.cudnn.benchmark = False
 
 
-def yaml_ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
+def yaml_ordered_load(stream, object_pairs_hook=OrderedDict):
     """Function to load YAML file using an OrderedDict
 
     See: https://stackoverflow.com/questions/5121931/in-python-how-can-you-load-yaml-mappings-as-ordereddicts
     """
-    class OrderedLoader(Loader):
+    class OrderedLoader(yaml.SafeLoader):
         pass
 
     def construct_mapping(loader, node):

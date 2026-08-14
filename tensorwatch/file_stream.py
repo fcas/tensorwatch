@@ -5,6 +5,7 @@ from .stream import Stream
 import pickle, os
 from typing import Any
 from . import utils
+from .safe_pickle import restricted_load
 import time
 
 class FileStream(Stream):
@@ -18,9 +19,10 @@ class FileStream(Stream):
 
     def close(self):
         if not self._file.closed:
+            file_name = os.path.realpath(self._file.name)
             self._file.close()
             self._file = None
-            utils.debug_log('FileStream is closed', os.path.realpath(self._file.name), verbosity=0)
+            utils.debug_log('FileStream is closed', file_name, verbosity=0)
         super(FileStream, self).close()
 
     def write(self, val:Any, from_stream:'Stream'=None):
@@ -38,7 +40,7 @@ class FileStream(Stream):
         if self._file is not None:
             self._file.seek(0, 0) # we may filter this stream multiple times
             while not utils.is_eof(self._file):
-                yield pickle.load(self._file)
+                yield restricted_load(self._file)
         for item in super(FileStream, self).read_all():
             yield item
 
@@ -48,12 +50,12 @@ class FileStream(Stream):
         if self._file is not None:
             self._file.seek(0, 0) # we may filter this stream multiple times
             while not utils.is_eof(self._file):
-                stream_item = pickle.load(self._file)
+                stream_item = restricted_load(self._file)
                 self.write(stream_item)
         super(FileStream, self).load()
 
     def save(self, from_stream:'Stream'=None):
         if not self._file.closed:
             self._file.flush()
-        super(FileStream, self).save(val)
+        super(FileStream, self).save(from_stream)
 
